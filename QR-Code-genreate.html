@@ -1,0 +1,87 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>QR Code Generater</title>
+    <script src="./node_modules/qrcode/build/qrcode.min.js"></script>
+    <link  href="./node_modules/semantic-ui-form/form.css" rel="stylesheet">
+    <link  href="./node_modules/semantic-ui-button/button.css" rel="stylesheet">
+    <style>
+      .container {
+        height: 90%;
+        display: grid;
+        grid-template-columns: 65% 35%;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>QR Code Generater</h2>
+    <div class="container">
+      <div class="ui form">
+        <div class="three fields">
+          <div class="field">
+            <label>dark color</label>
+            <input type="color" value="#000001" id="dark-color-selector" onChange="generate()">
+          </div>
+          <div class="field">
+            <label>light color</label>
+            <input type="color" value="#fffffe" id="light-color-selector" onChange="generate()">
+          </div>
+          <div class="field">
+            <label>Error Correction Level</label>
+            <select class="ui fluid dropdown" id="error-correction-selector" onChange="generate()">
+              <option value="H">H</option>
+              <option value="Q">Q</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>QR code Data:</label>
+          <textarea id="qr-code-data" onKeyup="generate()">http://example.com</textarea>
+        </div>
+      </div>
+      <div style="margin:10px;">
+        <img id="qr-code-image" src="" style="min-width:150px; max-width:100%;"/><br /><br />
+        <button class="mini primary ui button" onclick="downloadQRcode()">
+          Download
+        </button>
+      </div>
+    </div>
+  	<script>
+      function generate() {
+        let data = document.getElementById('qr-code-data').value;
+
+        let opts = {
+          errorCorrectionLevel: document.getElementById('error-correction-selector').value,
+          margin: 2,
+          color: {
+            dark: document.getElementById('dark-color-selector').value,
+            light: document.getElementById('light-color-selector').value,
+          }
+        }
+
+        QRCode.toDataURL(data, opts, function (error, url) {
+          document.getElementById('qr-code-image').src = url;
+        })
+      }
+
+      function downloadQRcode() {
+        let imageData = document.getElementById('qr-code-image').src;
+        console.log(imageData);
+        var element = document.createElement('a');
+        element.setAttribute('href', imageData);
+        element.setAttribute('download', 'QRcode.png');
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+      }
+
+      generate();
+  	</script>
+  </body>
+</html>
