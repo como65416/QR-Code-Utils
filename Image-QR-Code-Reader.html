@@ -1,0 +1,81 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Image QR Code Reader</title>
+    <script src="./node_modules/jsqr/dist/jsQR.js"></script>
+    <link  href="./node_modules/cropperjs/dist/cropper.css" rel="stylesheet">
+    <script src="./node_modules/cropperjs/dist/cropper.js"></script>
+    <link  href="./node_modules/semantic-ui-form/form.css" rel="stylesheet">
+    <style>
+      .container {
+        height: 90%;
+        display: grid;
+        grid-template-columns: 70% 30%;
+      }
+
+      #crop-output-image {
+        max-width: 100%;
+      }
+
+      #qr-code-data-textarea {
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Image QR Code Reader</h2>
+    Select photo or image file:
+    <input type="file" id="crop-image-file" onChange="loadCropImage()"></input><br />
+    <div class="container">
+      <div id="crop-image-block"></div>
+
+      <div style="padding: 0px 10px; visibility:hidden" id="result-block" class="ui form">
+        <image id="crop-output-image"></image><br /><br />
+        QR Code Data:
+        <textarea id="qr-code-data-textarea" rows="10"></textarea>
+      </div>
+    </div>
+  	<script>
+      let cropper = null;
+
+      function cropAndGetQrCodeData() {
+        document.getElementById('crop-output-image').src = cropper.getCroppedCanvas().toDataURL('image/jpeg');
+        document.getElementById('result-block').style.visibility = '';
+
+        let canvas = cropper.getCroppedCanvas();
+        context = canvas.getContext('2d');
+        let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+        let code = jsQR(imageData.data, imageData.width, imageData.height);
+
+        document.getElementById('qr-code-data-textarea').value = (code) ? code.data : '';
+      }
+
+      function loadCropImage () {
+        let canvas = document.createElement('canvas');
+        let cropperBlock = document.getElementById('crop-image-block');
+        while (cropperBlock.firstChild) {
+          cropperBlock.removeChild(cropperBlock.firstChild);
+        }
+        cropperBlock.appendChild(canvas);
+
+        let selectedFile = document.getElementById('crop-image-file').files[0];
+        let reader = new FileReader();
+        reader.onload = function(e) {
+          let image = new Image();
+          image.src = reader.result;
+          image.onload = function() {
+            context = canvas.getContext('2d');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+            cropper = new Cropper(canvas, {});
+            canvas.addEventListener('ready', cropAndGetQrCodeData);
+            canvas.addEventListener('cropend', cropAndGetQrCodeData);
+          };
+        }
+        reader.readAsDataURL(selectedFile);
+      }
+  	</script>
+  </body>
+</html>
